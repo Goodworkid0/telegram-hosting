@@ -2,7 +2,7 @@
 
 File-hosting application with subscription tiers, file management, wallet modules and administration.
 
-Solo-developed by [Vojislav Beric](https://github.com/Smileyface101).
+Solo-developed by [Vojislav Beric](https://github.com/Goodworkid0).
 
 ## What it does
 
