@@ -32,3 +32,19 @@ frontend/dist/
 **/.turbo/
 **/dist/
 **/artifacts/
+
+# Local coding-assistant configuration
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+.codex/
+.claude/
+.cursor/
+.windsurf/
+.cursorrules
+.windsurfrules
+.clinerules/
+.aider*
+.github/copilot-instructions.md
+.github/instructions/
+.github/prompts/
