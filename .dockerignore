@@ -1,0 +1,26 @@
+**/node_modules
+**/dist
+.git
+.gitignore
+*.md
+
+# Python
+**/__pycache__
+**/*.pyc
+**/.venv
+**/venv
+**/.pytest_cache
+
+# Local databases (never bake real data / PIN hashes into images)
+**/*.db
+**/*.sqlite
+**/*.sqlite3
+
+# Local env / secrets
+**/.env
+**/.env.*
+
+# Editor / OS
+.vscode
+.idea
+.DS_Store

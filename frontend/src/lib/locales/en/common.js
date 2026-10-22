@@ -1,0 +1,95 @@
+// Layout chrome, App-level screens, and generic reusable words.
+export default {
+  // Bottom navigation
+  'nav.forum': 'Forum',
+  'nav.chatbox': 'Chatbox',
+  'nav.files': 'Files',
+  'nav.escrow': 'Escrow',
+  'nav.admin': 'Admin',
+  'nav.mod_queue': 'Mod Queue',
+
+  // Header / user menu
+  'menu.profile': 'Profile',
+  'menu.settings': 'Settings',
+  'menu.admin_dashboard': 'Admin Dashboard',
+  'menu.wallet': 'Wallet',
+  'menu.shop': 'Shop',
+  'menu.referrals': 'Referrals',
+  'menu.live_chat': 'Live Chat',
+  'menu.announcements': 'Announcements',
+  'menu.official_group': 'Official Group',
+  'menu.viewing_as': 'Viewing as',
+  'menu.back_to_admin': 'Back to Admin',
+  'menu.level': 'Level {n}',
+
+  // App-level screens
+  'app.loading': 'Loading...',
+  'app.telegram_only': 'This app is only available inside Telegram.',
+  'app.open_in_telegram': 'Open in Telegram',
+  'app.search_bot': 'Search for @{bot} in Telegram',
+  'app.view_blacklist': 'View Blacklist',
+  'app.maintenance': "We're down for maintenance. Please check back soon.",
+  'app.signin_failed': "Couldn't sign you in",
+  'app.signin_failed_detail': "We couldn't verify your Telegram session. It may have expired, or the service is temporarily unavailable. Please try again in a moment.",
+
+  // Generic words reused across pages
+  'common.save': 'Save',
+  'common.cancel': 'Cancel',
+  'common.delete': 'Delete',
+  'common.edit': 'Edit',
+  'common.retry': 'Retry',
+  'common.refresh': 'Refresh',
+  'common.loading': 'loading',
+  'common.saving': 'Saving...',
+  'common.back': 'Back',
+  'common.confirm': 'Confirm',
+  'common.report': 'Report',
+  'common.load_failed': 'Failed to load',
+
+  // Relative time (lib/utils.js timeAgo/formatDate)
+  'time.never': 'never',
+  'time.just_now': 'just now',
+  'time.m_ago': '{n}m ago',
+  'time.h_ago': '{n}h ago',
+  'time.d_ago': '{n}d ago',
+  'time.mo_ago': '{n}mo ago',
+  'time.y_ago': '{n}y ago',
+  'time.today': 'Today',
+  'time.yesterday': 'Yesterday',
+  'time.at': '{date} at {time}',
+
+  // Layout toasts
+  'common.new_notification_one': 'You have a new notification',
+  'common.new_notification_many': 'You have {n} new notifications',
+  'common.new_notification_title': 'New notification',
+  'common.daily_claimed': 'Claimed {xp} XP + ${amount}!',
+  'common.daily_claim_failed': 'Failed to claim daily reward',
+
+  // Status badges (shared UI)
+  'status.pending': 'pending',
+  'status.accepted': 'accepted',
+  'status.funded': 'funded',
+  'status.delivered': 'delivered',
+  'status.completed': 'completed',
+  'status.disputed': 'disputed',
+  'status.cancelled': 'cancelled',
+  'status.refunded': 'refunded',
+  'status.processing': 'processing',
+  'status.approved': 'approved',
+  'status.rejected': 'rejected',
+  'status.failed': 'failed',
+  'status.active': 'active',
+  'status.disabled': 'disabled',
+  'status.deleted': 'deleted',
+  'status.expired': 'expired',
+  'status.needs_review': 'needs review',
+
+  // Role badges (shared UI)
+  'role.admin': 'admin',
+  'role.mod': 'mod',
+  'role.member': 'member',
+  'role.trial': 'trial',
+  'common.load_more': 'Load more',
+  'menu.support': 'Support',
+  'common.close': 'Close',
+}

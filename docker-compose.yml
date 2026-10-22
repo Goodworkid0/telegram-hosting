@@ -1,0 +1,139 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: forum
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-forum_dev}
+      POSTGRES_DB: forum
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U forum"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - redis_data:/data
+    ports:
+      - "127.0.0.1:6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  api:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://forum:${DB_PASSWORD:-forum_dev}@postgres:5432/forum
+      - REDIS_URL=redis://redis:6379/0
+      - ENVIRONMENT=${ENVIRONMENT:-production}
+      - SECRET_KEY=${SECRET_KEY:-}
+      - BOT_TOKEN=${BOT_TOKEN:-}
+      - WEBAPP_URL=${WEBAPP_URL:-https://YOUR_DOMAIN.com}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-}
+      - DB_POOL_SIZE=${DB_POOL_SIZE:-20}
+      - DB_MAX_OVERFLOW=${DB_MAX_OVERFLOW:-10}
+      - NOWPAYMENTS_API_KEY=${NOWPAYMENTS_API_KEY:-}
+      - NOWPAYMENTS_PUBLIC=${NOWPAYMENTS_PUBLIC:-}
+      - NOWPAYMENTS_IPN_SECRET=${NOWPAYMENTS_IPN_SECRET:-}
+      - NOWPAYMENTS_IPN_URL=${NOWPAYMENTS_IPN_URL:-}
+      - ALLOW_AUTO_CREATE_TABLES=${ALLOW_AUTO_CREATE_TABLES:-false}
+      - ALLOW_DEV_LOGIN=${ALLOW_DEV_LOGIN:-false}
+      # Number of trusted reverse proxies in front of the app, counted from the
+      # RIGHT of X-Forwarded-For. The rate-limit key and audit-log client IP are
+      # derived from this hop; entries to the left are client-supplied and ignored,
+      # so a forged X-Forwarded-For can't mint fresh rate-limit buckets. MUST match
+      # your topology: 1 for a single nginx, 2 for Cloudflare -> nginx. Leaving this
+      # unset (0) falls back to the socket peer, which uvicorn's --forwarded-allow-ips
+      # rewrites from the client header -> spoofable. Keep it >=1 in any real deploy.
+      - TRUSTED_PROXY_COUNT=${TRUSTED_PROXY_COUNT:-1}
+      # Periodic background loops run in the dedicated `worker` service, not in
+      # the (multi-)web workers. (A Redis leader lock would make double-run safe
+      # regardless, but keeping web workers request-only is cleaner.)
+      - RUN_BACKGROUND_TASKS=false
+    volumes:
+      - uploads_data:/app/uploads
+    ports:
+      - "127.0.0.1:8000:8000"
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips=* --workers 2
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/health', timeout=3).status==200 else 1)\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Dedicated background-task runner. Runs the periodic loops (giveaways,
+  # achievements, escrow release, leaderboard rotation, ban expiry) exactly once
+  # via a Redis leader lock — safe even if scaled to multiple replicas.
+  worker:
+    build: .
+    restart: unless-stopped
+    entrypoint: []
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_healthy   # ensures migrations have run before we hit the DB
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://forum:${DB_PASSWORD:-forum_dev}@postgres:5432/forum
+      - REDIS_URL=redis://redis:6379/0
+      - ENVIRONMENT=${ENVIRONMENT:-production}
+      - SECRET_KEY=${SECRET_KEY:-}
+      - BOT_TOKEN=${BOT_TOKEN:-}
+      - DB_POOL_SIZE=${DB_POOL_SIZE:-5}
+      - DB_MAX_OVERFLOW=${DB_MAX_OVERFLOW:-5}
+      - NOWPAYMENTS_API_KEY=${NOWPAYMENTS_API_KEY:-}
+      - NOWPAYMENTS_IPN_SECRET=${NOWPAYMENTS_IPN_SECRET:-}
+      - NOWPAYMENTS_IPN_URL=${NOWPAYMENTS_IPN_URL:-}
+    command: python worker.py
+
+  bot:
+    build: .
+    restart: unless-stopped
+    entrypoint: []
+    depends_on:
+      postgres:
+        condition: service_healthy
+      api:
+        condition: service_healthy   # ensures migrations have run before we hit the DB
+    environment:
+      - BOT_TOKEN=${BOT_TOKEN:-}
+      - WEBAPP_URL=${WEBAPP_URL:-https://YOUR_DOMAIN.com}
+      - APP_NAME=${APP_NAME:-Forum}
+      # File-share ingestion needs DB access + the two mirror channels (bot must
+      # be admin in both). Leave the channel IDs unset to disable file sharing.
+      - DATABASE_URL=postgresql+asyncpg://forum:${DB_PASSWORD:-forum_dev}@postgres:5432/forum
+      - ENVIRONMENT=${ENVIRONMENT:-production}
+      - DB_POOL_SIZE=${DB_POOL_SIZE:-5}
+      - DB_MAX_OVERFLOW=${DB_MAX_OVERFLOW:-5}
+      - FILES_RETRIEVAL_CHANNEL_ID=${FILES_RETRIEVAL_CHANNEL_ID:-}
+      - FILES_BACKUP_CHANNEL_ID=${FILES_BACKUP_CHANNEL_ID:-}
+      # Per-user upload caps (0 disables a given cap).
+      - FILES_MAX_PER_HOUR=${FILES_MAX_PER_HOUR:-20}
+      - FILES_MAX_PER_DAY=${FILES_MAX_PER_DAY:-100}
+    command: python bot.py
+
+volumes:
+  postgres_data:
+  redis_data:
+  uploads_data:

@@ -1,0 +1,19 @@
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+sqlalchemy==2.0.25
+alembic==1.13.1
+python-jose[cryptography]==3.4.0
+bcrypt==5.0.0
+python-multipart==0.0.18
+python-dotenv==1.0.0
+httpx==0.28.1
+python-telegram-bot[rate-limiter]==21.0
+pydantic[email]==2.5.3
+slowapi==0.1.9
+asyncpg==0.30.0
+pytest==9.1.0
+pytest-asyncio==1.4.0
+aiosqlite==0.19.0  # tests only — in-memory SQLite for the test suite; runtime is PostgreSQL
+Pillow==12.2.0
+redis==8.0.0
+nh3==0.2.20
